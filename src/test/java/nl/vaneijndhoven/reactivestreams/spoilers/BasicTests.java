@@ -1,5 +1,9 @@
 package nl.vaneijndhoven.reactivestreams.spoilers;
 
+import akka.actor.ActorSystem;
+import akka.stream.ActorMaterializer;
+import akka.stream.javadsl.Source;
+import akka.stream.testkit.javadsl.TestSink;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Test;
@@ -27,6 +31,16 @@ public class BasicTests {
         test.assertNoErrors();
         test.assertValueCount(10);
         test.assertComplete();
+    }
+
+    @Test
+    public void testTestSink() {
+        ActorSystem system = ActorSystem.create();
+
+        Source.range(0, 9).runWith(TestSink.probe(system), ActorMaterializer.create(system))
+                .request(100)
+                .expectNext(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+                .expectComplete();
     }
 
 }
